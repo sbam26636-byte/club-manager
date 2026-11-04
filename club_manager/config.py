@@ -13,7 +13,7 @@ INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
 class Config:
     # Used to sign the login session. Set a long random value in the
     # SECRET_KEY environment variable for anything beyond a local demo.
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-secret-change-me")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
 
     DATABASE = os.path.join(INSTANCE_DIR, "club_manager.sqlite")
     UPLOAD_FOLDER = os.path.join(INSTANCE_DIR, "uploads")
