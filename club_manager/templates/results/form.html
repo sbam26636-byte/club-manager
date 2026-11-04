@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, result_fields with context %}
+{% set titles = {'record': 'Record a result', 'submit': 'Submit your result', 'edit': 'Edit result'} %}
+{% block title %}{{ titles[mode] }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <h1 class="h3 mb-1">{{ titles[mode] }}</h1>
+    <p class="text-secondary">{{ event.name }}, {{ event.event_date|nice_date }}{% if mode == 'edit' %}, {{ result.full_name }}{% endif %}</p>
+
+    {% if mode == 'record' and not candidates %}
+      <div class="panel">
+        <p class="mb-2">Every registered participant already has a result, or nobody has signed up yet.</p>
+        <a class="btn btn-primary" href="{{ url_for('events.detail', event_id=event.id) }}">Back to the event</a>
+      </div>
+    {% else %}
+    <form method="post" class="panel">
+      {{ csrf() }}
+      {% if mode == 'record' %}
+        <div class="mb-3">
+          <label for="f-member_id" class="form-label">Participant <span class="text-danger" aria-hidden="true">*</span></label>
+          <select id="f-member_id" name="member_id" class="form-select{% if errors.get('member_id') %} is-invalid{% endif %}" required>
+            <option value="">Choose a participant...</option>
+            {% for c in candidates %}
+              <option value="{{ c.id }}" {% if values.get('member_id')|string == c.id|string %}selected{% endif %}>{{ c.full_name }} (no. {{ c.member_number }})</option>
+            {% endfor %}
+          </select>
+          {% if errors.get('member_id') %}<div class="invalid-feedback">{{ errors['member_id'] }}</div>{% endif %}
+          <div class="form-text">Only members signed up for this event are listed.</div>
+        </div>
+      {% endif %}
+
+      {{ result_fields(sport) }}
+
+      {% if mode == 'submit' %}
+        <p class="form-text">A club admin checks your result before it appears in the results table.</p>
+      {% endif %}
+      <button class="btn btn-primary" type="submit">{{ {'record': 'Save result', 'submit': 'Submit result', 'edit': 'Save changes'}[mode] }}</button>
+      <a class="btn btn-link" href="{{ url_for('events.detail', event_id=event.id) }}">Cancel</a>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, avatar with context %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="d-flex align-items-center gap-3">
+    {{ avatar(member, 72) }}
+    <div>
+      <h1 class="h3 mb-1">{{ member.full_name }}</h1>
+      <span class="text-secondary">Member no. {{ member.member_number }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="panel">
+      <h2>Membership</h2>
+      <dl class="data-list row mb-0">
+        <dt class="col-5">Status</dt><dd class="col-7">{{ status_badge(member.status) }}</dd>
+        <dt class="col-5">Type</dt><dd class="col-7">{{ member.membership_type }}</dd>
+        <dt class="col-5">Joined</dt><dd class="col-7">{{ member.join_date|nice_date }}</dd>
+        <dt class="col-5">Valid until</dt><dd class="col-7">{{ member.expiry_date|nice_date }}</dd>
+      </dl>
+    </div>
+    <div class="panel">
+      <h2>Your details</h2>
+      <dl class="data-list row mb-0">
+        <dt class="col-5">Email</dt><dd class="col-7">{{ member.email }}</dd>
+        <dt class="col-5">Phone</dt><dd class="col-7">{{ member.phone or '-' }}</dd>
+        <dt class="col-5">Date of birth</dt><dd class="col-7">{{ member.date_of_birth|nice_date }}</dd>
+        <dt class="col-5">Address</dt><dd class="col-7">{{ member.address or '-' }}</dd>
+        <dt class="col-5">Emergency contact</dt><dd class="col-7">{{ member.emergency_contact or '-' }}</dd>
+      </dl>
+      <p class="form-text mt-2 mb-0">To change these details, ask a club admin.</p>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="panel">
+      <h2>Your upcoming events</h2>
+      {% if upcoming %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <tbody>
+          {% for e in upcoming %}
+            <tr>
+              <td class="text-nowrap">{{ e.event_date|nice_date }}</td>
+              <td><a href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.name }}</a></td>
+              <td>{{ e.location or '' }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="mb-2 text-secondary">You are not signed up for any upcoming event.</p>
+      {% endif %}
+      <a class="btn btn-primary mt-3" href="{{ url_for('events.index') }}">Browse events</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

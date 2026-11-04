@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field with context %}
+{% block title %}{{ club.name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1 class="h3">{{ club.name }}</h1>
+    <span class="text-secondary">{{ sport_label(club.sport) }}</span>
+  </div>
+  <a class="btn btn-outline-primary" href="{{ url_for('superadmin.clubs') }}">All clubs</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="panel">
+      <h2>Club admins</h2>
+      {% if admins %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Name</th><th>Email</th><th></th></tr></thead>
+          <tbody>
+          {% for admin in admins %}
+            <tr>
+              <td>{{ admin.full_name }}</td>
+              <td>{{ admin.email }}</td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('superadmin.reset_admin_password', user_id=admin.id) }}"
+                      onsubmit="return confirm('Create a new temporary password for this admin?')">
+                  {{ csrf() }}
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Reset password</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p class="mb-0">This club has no admin yet. Add one with the form.</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <form method="post" action="{{ url_for('superadmin.new_admin', club_id=club.id) }}" class="panel">
+      <h2>Add an admin</h2>
+      {{ csrf() }}
+      {{ field('full_name', 'Full name', required=true) }}
+      {{ field('email', 'Email (used to log in)', type='email', required=true) }}
+      <p class="form-text">A temporary password is created and shown once after saving.</p>
+      <button class="btn btn-primary" type="submit">Add admin</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_badge, avatar with context %}
+{% block title %}{{ member.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="d-flex align-items-center gap-3">
+    {{ avatar(member, 64) }}
+    <div>
+      <h1 class="h3 mb-1">{{ member.full_name }}</h1>
+      <span class="text-secondary">Member no. {{ member.member_number }}</span> {{ status_badge(member.status) }}
+    </div>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('members.edit', user_id=member.id) }}">Edit</a>
+    <form method="post" action="{{ url_for('members.reset_password', user_id=member.id) }}" class="m-0"
+          onsubmit="return confirm('Create a new temporary password for this member?')">
+      {{ csrf() }}<button class="btn btn-outline-secondary" type="submit">Reset password</button>
+    </form>
+    {% if member.status == 'deactivated' %}
+    <form method="post" action="{{ url_for('members.reactivate', user_id=member.id) }}" class="m-0">
+      {{ csrf() }}<button class="btn btn-success" type="submit">Reactivate</button>
+    </form>
+    {% else %}
+    <form method="post" action="{{ url_for('members.deactivate', user_id=member.id) }}" class="m-0"
+          onsubmit="return confirm('Deactivate this member? They will no longer be able to log in. Their history is kept.')">
+      {{ csrf() }}<button class="btn btn-outline-danger" type="submit">Deactivate</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="panel">
+      <h2>Details</h2>
+      <dl class="data-list row mb-0">
+        <dt class="col-5">Email</dt><dd class="col-7">{{ member.email }}</dd>
+        <dt class="col-5">Phone</dt><dd class="col-7">{{ member.phone or '-' }}</dd>
+        <dt class="col-5">Date of birth</dt><dd class="col-7">{{ member.date_of_birth|nice_date }}</dd>
+        <dt class="col-5">Joined</dt><dd class="col-7">{{ member.join_date|nice_date }}</dd>
+        <dt class="col-5">Membership</dt><dd class="col-7">{{ member.membership_type }}</dd>
+        <dt class="col-5">Valid until</dt><dd class="col-7">{{ member.expiry_date|nice_date }}</dd>
+        <dt class="col-5">Address</dt><dd class="col-7">{{ member.address or '-' }}</dd>
+        <dt class="col-5">Emergency contact</dt><dd class="col-7">{{ member.emergency_contact or '-' }}</dd>
+        <dt class="col-5">Notes</dt><dd class="col-7">{{ member.notes or '-' }}</dd>
+        <dt class="col-5">ID document</dt>
+        <dd class="col-7">{% if member.id_document_file %}<a href="{{ url_for('files.member_file', user_id=member.id, kind='id') }}" target="_blank" rel="noopener">Open document</a>{% else %}-{% endif %}</dd>
+      </dl>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="panel">
+      <h2>Upcoming sign-ups</h2>
+      {% if upcoming %}
+        <ul class="list-unstyled mb-0">
+        {% for e in upcoming %}
+          <li class="mb-1"><a href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.name }}</a> <span class="text-secondary">on {{ e.event_date|nice_date }}</span></li>
+        {% endfor %}
+        </ul>
+      {% else %}<p class="mb-0 text-secondary">Not signed up for any upcoming event.</p>{% endif %}
+    </div>
+    <div class="panel">
+      <h2>Results history</h2>
+      {% if history %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Event</th><th>Date</th><th>Result</th><th>Place</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for h in history %}
+            <tr>
+              <td><a href="{{ url_for('events.detail', event_id=h.event_id) }}">{{ h.event_name }}</a></td>
+              <td>{{ h.event_date|nice_date }}</td>
+              <td>{{ h.summary }}</td>
+              <td>{{ h.position or '-' }}</td>
+              <td>{{ status_badge(h.status) }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<p class="mb-0 text-secondary">No results yet.</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_badge with context %}
+{% block title %}{{ event.name }}{% endblock %}
+{% block content %}
+{% set is_admin = current_user.role == 'admin' %}
+<div class="page-head">
+  <div>
+    <h1 class="h3 mb-1">{{ event.name }}</h1>
+    <span class="text-secondary">{{ event.event_date|nice_date }}{% if event.location %}, {{ event.location }}{% endif %}</span>
+    <span class="badge text-bg-light border ms-1">{{ event.event_type|capitalize }}</span>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('results.event_results', event_id=event.id) }}">View results</a>
+    {% if is_admin %}
+      <a class="btn btn-primary" href="{{ url_for('results.record', event_id=event.id) }}">Record a result</a>
+      <a class="btn btn-outline-secondary" href="{{ url_for('events.edit', event_id=event.id) }}">Edit event</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="panel">
+      <h2>About this event</h2>
+      {% if event.description %}<p>{{ event.description }}</p>{% endif %}
+      <dl class="data-list row mb-0">
+        <dt class="col-5">Discipline</dt><dd class="col-7">{{ event.discipline or '-' }}</dd>
+        <dt class="col-5">Entry fee</dt><dd class="col-7">{% if event.entry_fee %}{{ currency }}{{ '%.2f'|format(event.entry_fee) }}{% else %}Free{% endif %}</dd>
+        <dt class="col-5">Registered</dt>
+        <dd class="col-7">{{ event.reg_count }}{% if event.max_participants %} of {{ event.max_participants }} places{% endif %}</dd>
+      </dl>
+    </div>
+
+    {% if not is_admin %}
+    <div class="panel">
+      <h2>Your sign-up</h2>
+      {% if i_am_registered %}
+        <p>You are registered for this event.</p>
+        {% if my_result %}
+          <p class="mb-0">Your result: {{ status_badge(my_result.status) }}
+            {% if my_result.status == 'pending' %}<span class="text-secondary small">waiting for a club admin to approve it</span>{% endif %}</p>
+        {% elif event.event_date <= today %}
+          <a class="btn btn-primary" href="{{ url_for('results.submit', event_id=event.id) }}">Submit your result</a>
+        {% elif not is_past %}
+          <form method="post" action="{{ url_for('events.unregister', event_id=event.id) }}" class="m-0">
+            {{ csrf() }}<button class="btn btn-outline-danger" type="submit">Cancel my sign-up</button>
+          </form>
+        {% endif %}
+      {% elif is_past %}
+        <p class="mb-0 text-secondary">This event has taken place.</p>
+      {% elif is_full %}
+        <p class="mb-0 text-secondary">This event is full.</p>
+      {% else %}
+        <form method="post" action="{{ url_for('events.register', event_id=event.id) }}" class="m-0">
+          {{ csrf() }}<button class="btn btn-primary" type="submit">Sign up for this event</button>
+        </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-7">
+    <div class="panel">
+      <h2>Participants</h2>
+      {% if participants %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Name</th>{% if is_admin %}<th>No.</th><th>Result</th><th></th>{% endif %}</tr></thead>
+          <tbody>
+          {% for p in participants %}
+            <tr>
+              <td>{% if is_admin %}<a href="{{ url_for('members.detail', user_id=p.id) }}">{{ p.full_name }}</a>{% else %}{{ p.full_name }}{% endif %}</td>
+              {% if is_admin %}
+              <td>{{ p.member_number }}</td>
+              <td>
+                {% if p.result_id %}
+                  {{ status_badge(p.result_status) }}
+                  <a class="small ms-1" href="{{ url_for('results.edit', result_id=p.result_id) }}">Edit</a>
+                {% else %}
+                  <a class="small" href="{{ url_for('results.record', event_id=event.id, member_id=p.id) }}">Record result</a>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                {% if not is_past and not p.result_id %}
+                <form method="post" action="{{ url_for('events.unregister', event_id=event.id) }}" class="m-0">
+                  {{ csrf() }}<input type="hidden" name="member_id" value="{{ p.id }}">
+                  <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                </form>
+                {% endif %}
+              </td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<p class="mb-0 text-secondary">Nobody has signed up yet.</p>{% endif %}
+    </div>
+
+    {% if is_admin and not is_past %}
+    <div class="panel">
+      <h2>Sign up a member</h2>
+      {% if is_full %}
+        <p class="mb-0 text-secondary">The event is full.</p>
+      {% elif can_add %}
+        <form method="post" action="{{ url_for('events.register', event_id=event.id) }}" class="row g-2">
+          {{ csrf() }}
+          <div class="col-sm-8">
+            <label for="member_id" class="visually-hidden">Member</label>
+            <select class="form-select" id="member_id" name="member_id" required>
+              <option value="">Choose a member...</option>
+              {% for m in can_add %}<option value="{{ m.id }}">{{ m.full_name }} (no. {{ m.member_number }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-4"><button class="btn btn-primary w-100" type="submit">Sign up</button></div>
+        </form>
+      {% else %}
+        <p class="mb-0 text-secondary">Every member is already signed up.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

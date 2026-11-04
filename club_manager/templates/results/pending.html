@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Review results{% endblock %}
+{% block content %}
+<div class="page-head"><h1 class="h3">Results waiting for approval</h1></div>
+<div class="panel">
+  {% if rows %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Member</th><th>Event</th><th>Submitted result</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td class="fw-semibold">{{ r.full_name }}<div class="small text-secondary fw-normal">No. {{ r.member_number }}</div></td>
+          <td><a href="{{ url_for('events.detail', event_id=r.event_id) }}">{{ r.event_name }}</a>
+              <div class="small text-secondary">{{ r.event_date|nice_date }}</div></td>
+          <td>{{ r.summary }}</td>
+          <td class="text-end text-nowrap">
+            <form method="post" action="{{ url_for('results.approve', result_id=r.id) }}" class="d-inline">
+              {{ csrf() }}<button class="btn btn-sm btn-success" type="submit">Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('results.reject', result_id=r.id) }}" class="d-inline"
+                  onsubmit="return confirm('Reject this result? The member can submit a corrected one.')">
+              {{ csrf() }}<button class="btn btn-sm btn-outline-danger" type="submit">Reject</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="mb-0 text-secondary">Nothing to review. Results that members submit will show up here.</p>
+  {% endif %}
+</div>
+{% endblock %}

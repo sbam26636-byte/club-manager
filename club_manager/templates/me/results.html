@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge with context %}
+{% block title %}My results{% endblock %}
+{% block content %}
+<div class="page-head"><h1 class="h3">My results</h1></div>
+<div class="panel">
+  {% if history %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Date</th><th>Event</th><th>Result</th><th>Place</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for h in history %}
+        <tr>
+          <td class="text-nowrap">{{ h.event_date|nice_date }}</td>
+          <td><a href="{{ url_for('results.event_results', event_id=h.event_id) }}">{{ h.event_name }}</a>
+              {% if h.discipline %}<div class="small text-secondary">{{ h.discipline }}</div>{% endif %}</td>
+          <td>{{ h.summary }}</td>
+          <td>{{ h.position or '-' }}</td>
+          <td>{{ status_badge(h.status) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="mb-0 text-secondary">You have no results yet. After an event you signed up for, you can submit your result from the event page.</p>
+  {% endif %}
+</div>
+{% endblock %}

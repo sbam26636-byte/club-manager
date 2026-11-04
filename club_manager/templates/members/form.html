@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field, textarea, select with context %}
+{% set editing = member is not none %}
+{# The select macro wants (value, label) pairs, so build them from the plain list of types. #}
+{% set type_options = [] %}
+{% for t in membership_types %}{% set _ = type_options.append((t, t)) %}{% endfor %}
+{% block title %}{{ 'Edit member' if editing else 'Register member' }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="h3">{{ 'Edit ' ~ member.full_name if editing else 'Register a member' }}</h1>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+  {{ csrf() }}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="panel">
+        <h2>Basics</h2>
+        <div class="row">
+          <div class="col-md-6">{{ field('full_name', 'Full name', required=true) }}</div>
+          <div class="col-md-6">{{ field('email', 'Email', type='email', required=true, help='This is also their login.') }}</div>
+          <div class="col-md-4">{{ field('phone', 'Phone', type='tel') }}</div>
+          <div class="col-md-4">{{ field('date_of_birth', 'Date of birth', type='date') }}</div>
+          <div class="col-md-4">{{ field('join_date', 'Join date', type='date', required=true,
+                                          help='Membership renews every year on this date.') }}</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Membership</h2>
+        <div class="row">
+          <div class="col-md-6">{{ select('membership_type', 'Membership type', type_options, required=true) }}</div>
+          {% if editing and member.status != 'deactivated' %}
+          <div class="col-md-6">{{ select('status', 'Status', [('active', 'Active'), ('expired', 'Expired')], required=true) }}</div>
+          {% endif %}
+        </div>
+        {% if editing %}
+          <p class="form-text mb-0">Use the buttons on the member's page to deactivate or reactivate them.</p>
+        {% endif %}
+      </div>
+
+      <div class="panel">
+        <h2>Extra details</h2>
+        {{ textarea('address', 'Address', rows=2) }}
+        {{ field('emergency_contact', 'Emergency contact', help='Name and phone number.') }}
+        {{ textarea('notes', 'Notes (only visible to club admins)', rows=3) }}
+      </div>
+
+      <div class="panel">
+        <h2>Uploads</h2>
+        <div class="mb-3">
+          <label for="f-photo" class="form-label">Photo</label>
+          <input type="file" id="f-photo" name="photo" accept="image/*" class="form-control{% if errors.get('photo') %} is-invalid{% endif %}">
+          {% if errors.get('photo') %}<div class="invalid-feedback">{{ errors['photo'] }}</div>{% endif %}
+          {% if editing and member.photo_file %}<div class="form-text">A photo is saved. Choosing a new file replaces it.</div>{% endif %}
+        </div>
+        <div class="mb-0">
+          <label for="f-id_document" class="form-label">Identification document</label>
+          <input type="file" id="f-id_document" name="id_document" accept="image/*,.pdf" class="form-control{% if errors.get('id_document') %} is-invalid{% endif %}">
+          {% if errors.get('id_document') %}<div class="invalid-feedback">{{ errors['id_document'] }}</div>{% endif %}
+          {% if editing and member.id_document_file %}<div class="form-text">A document is saved. Choosing a new file replaces it.</div>{% endif %}
+          <div class="form-text">Images or PDF, up to 5 MB. Only club admins and the member can open uploaded files.</div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Register member' }}</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('members.detail', user_id=member.id) if editing else url_for('members.index') }}">Cancel</a>
+      </div>
+    </div>
+
+    {% if not editing %}
+    <div class="col-lg-4">
+      <div class="panel">
+        <h2>What happens next</h2>
+        <p class="mb-0 small">A member number is assigned and a login is created. A temporary password is shown once after saving, so you can pass it on to the member.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,89 @@
+/* Club Manager: small layer on top of Bootstrap.
+   Colours are defined once here as variables. */
+:root {
+  --ink: #13313a;            /* navigation bar */
+  --brand: #0f5c6e;          /* main action colour */
+  --brand-dark: #0b4856;
+  --gold: #b88a12;
+  --silver: #7d8a97;
+  --bronze: #a2623a;
+
+  --bs-body-bg: #f3f5f7;
+  --bs-body-color: #1d2a30;
+  --bs-body-font-family: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bs-primary: var(--brand);
+  --bs-primary-rgb: 15, 92, 110;
+  --bs-link-color: var(--brand);
+  --bs-link-hover-color: var(--brand-dark);
+  --bs-link-color-rgb: 15, 92, 110;
+  --bs-link-hover-color-rgb: 11, 72, 86;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--brand); --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: var(--brand-dark); --bs-btn-hover-border-color: var(--brand-dark);
+  --bs-btn-active-bg: #093c48; --bs-btn-active-border-color: #093c48;
+  --bs-btn-disabled-bg: var(--brand); --bs-btn-disabled-border-color: var(--brand);
+}
+.btn-outline-primary {
+  --bs-btn-color: var(--brand); --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: var(--brand); --bs-btn-hover-border-color: var(--brand);
+  --bs-btn-active-bg: var(--brand-dark); --bs-btn-active-border-color: var(--brand-dark);
+}
+.text-bg-primary { background-color: var(--brand) !important; }
+
+h1, h2, h3, h4, .h1, .h2, .h3, .h4, .h5 { font-weight: 650; letter-spacing: -0.01em; }
+
+/* ---------- navigation ---------- */
+.app-nav { background: var(--ink); }
+.app-nav .navbar-brand { font-weight: 700; letter-spacing: -0.01em; }
+.app-nav .brand-club { font-weight: 400; opacity: .7; margin-left: .6rem; font-size: .9rem; }
+.app-nav .nav-link.active { color: #fff; box-shadow: inset 0 -2px 0 #6fc3d3; }
+.app-nav .badge-pending { font-size: .7rem; vertical-align: text-top; }
+
+main.container { padding-top: 1.75rem; padding-bottom: 3rem; }
+.page-head { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;
+             justify-content: space-between; margin-bottom: 1.25rem; }
+.page-head h1 { margin: 0; }
+
+/* ---------- panels and tables ---------- */
+.panel { background: #fff; border: 1px solid #dde3e8; border-radius: .5rem; padding: 1.25rem; }
+.panel + .panel { margin-top: 1.25rem; }
+.panel h2 { font-size: 1.05rem; margin-bottom: .9rem; }
+.table > :not(caption) > * > * { padding: .65rem .75rem; }
+.table thead th { font-size: .85rem; color: #52646d; font-weight: 600; border-bottom-width: 1px; }
+.data-list dt { font-weight: 500; color: #52646d; }
+.data-list dd { margin-bottom: .6rem; }
+
+.avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; background: #dbe7ea; }
+.avatar-initial { display: inline-flex; align-items: center; justify-content: center;
+                  font-size: 2.2rem; font-weight: 600; color: var(--brand); }
+
+.stat { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+
+/* ---------- results page: podium and ranked table ---------- */
+.podium { align-items: end; }
+.podium-card { background: #fff; border: 1px solid #dde3e8; border-top-width: 6px;
+               border-radius: .5rem; padding: 1rem 1.25rem; }
+.podium-card.place-1 { border-top-color: var(--gold);   padding-top: 1.6rem; padding-bottom: 1.6rem; }
+.podium-card.place-2 { border-top-color: var(--silver); padding-top: 1.2rem; padding-bottom: 1.2rem; }
+.podium-card.place-3 { border-top-color: var(--bronze); }
+.podium-place { font-size: .95rem; font-weight: 700; }
+.place-1 .podium-place { color: var(--gold); }
+.place-2 .podium-place { color: var(--silver); }
+.place-3 .podium-place { color: var(--bronze); }
+.podium-name { font-size: 1.25rem; font-weight: 650; }
+.place-1 .podium-name { font-size: 1.5rem; }
+.podium-result { color: #52646d; margin-bottom: .35rem; }
+
+.position { display: inline-flex; align-items: center; justify-content: center; width: 1.9rem;
+            height: 1.9rem; border-radius: 50%; font-weight: 700; background: #e7ecef; color: #3a4b54; }
+.row-place-1 > * { background: #fbf4df !important; }
+.row-place-2 > * { background: #eef1f4 !important; }
+.row-place-3 > * { background: #f6ebe4 !important; }
+.row-place-1 .position { background: var(--gold); color: #fff; }
+.row-place-2 .position { background: var(--silver); color: #fff; }
+.row-place-3 .position { background: var(--bronze); color: #fff; }
+
+.copy-note { user-select: all; }
+:focus-visible { outline: 3px solid #6fc3d3; outline-offset: 2px; }

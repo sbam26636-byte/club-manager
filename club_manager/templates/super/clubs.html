@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Clubs{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="h3">Clubs</h1>
+  <a class="btn btn-primary" href="{{ url_for('superadmin.new_club') }}">Create club</a>
+</div>
+<div class="panel">
+  {% if clubs %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Club</th><th>Sport</th><th>Admins</th><th>Members</th><th></th></tr></thead>
+      <tbody>
+      {% for club in clubs %}
+        <tr>
+          <td class="fw-semibold">{{ club.name }}</td>
+          <td>{{ sport_label(club.sport) }}</td>
+          <td>{{ club.admin_count }}</td>
+          <td>{{ club.member_count }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('superadmin.club_detail', club_id=club.id) }}">Manage admins</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="mb-0">There are no clubs yet. Create the first one to get started.</p>
+  {% endif %}
+</div>
+{% endblock %}

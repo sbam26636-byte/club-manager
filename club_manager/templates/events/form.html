@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field, textarea, select with context %}
+{% set editing = event is not none %}
+{% block title %}{{ 'Edit event' if editing else 'Create event' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h3 mb-3">{{ 'Edit event' if editing else 'Create an event' }}</h1>
+    <form method="post" class="panel">
+      {{ csrf() }}
+      {{ field('name', 'Event name', required=true) }}
+      <div class="row">
+        <div class="col-md-6">{{ field('event_date', 'Date', type='date', required=true) }}</div>
+        <div class="col-md-6">{{ field('location', 'Location') }}</div>
+        <div class="col-md-6">
+          {{ field('discipline', 'Discipline', attrs='list="disciplines"') }}
+          <datalist id="disciplines">{% for d in disciplines %}<option value="{{ d }}">{% endfor %}</datalist>
+        </div>
+        <div class="col-md-6">{{ select('event_type', 'Event type', event_types, required=true) }}</div>
+        <div class="col-md-6">{{ field('entry_fee', 'Entry fee (' ~ currency ~ ')', type='number', attrs='min="0" step="0.01"') }}</div>
+        <div class="col-md-6">{{ field('max_participants', 'Maximum participants', type='number', attrs='min="1" step="1"', help='Leave empty for no limit.') }}</div>
+      </div>
+      {{ textarea('description', 'Short description', rows=3) }}
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if editing else 'Create event' }}</button>
+      <a class="btn btn-link" href="{{ url_for('events.detail', event_id=event.id) if editing else url_for('events.index') }}">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
