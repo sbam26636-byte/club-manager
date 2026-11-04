@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf with context %}
+{% block title %}Results: {{ event.name }}{% endblock %}
+{% block content %}
+{% set place_names = {1: '1st place', 2: '2nd place', 3: '3rd place'} %}
+<div class="page-head">
+  <div>
+    <h1 class="h3 mb-1">{{ event.name }}</h1>
+    <span class="text-secondary">Results, {{ event.event_date|nice_date }}{% if event.discipline %}, {{ event.discipline }}{% endif %}</span>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-outline-primary" href="{{ url_for('events.detail', event_id=event.id) }}">Event details</a>
+    {% if current_user.role == 'admin' %}
+      <a class="btn btn-primary" href="{{ url_for('results.record', event_id=event.id) }}">Record a result</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if ranked %}
+  <div class="row g-3 podium mb-4">
+    {% for position, group in podium %}
+      <div class="col-md-4">
+        <div class="podium-card place-{{ position }}">
+          <div class="podium-place">{{ place_names[position] }}</div>
+          {% for item in group %}
+            <div class="podium-name">{{ item.full_name }}</div>
+            <div class="podium-result">{{ item.cells|join(', ') }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="panel">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Place</th><th>Name</th>
+            {% for column in columns %}<th>{{ column }}</th>{% endfor %}
+            {% if current_user.role == 'admin' %}<th></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for item in ranked %}
+          <tr class="{{ 'row-place-' ~ item.position if item.position <= 3 }}">
+            <td><span class="position">{{ item.position }}</span></td>
+            <td class="fw-semibold">{{ item.full_name }}</td>
+            {% for cell in item.cells %}<td>{{ cell }}</td>{% endfor %}
+            {% if current_user.role == 'admin' %}
+            <td class="text-end text-nowrap">
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('results.edit', result_id=item.id) }}">Edit</a>
+              <form method="post" action="{{ url_for('results.delete', result_id=item.id) }}" class="d-inline"
+                    onsubmit="return confirm('Delete this result?')">
+                {{ csrf() }}<button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+              </form>
+            </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="text-secondary small mt-2">Only approved results are shown. Equal results share a place.</p>
+{% else %}
+  <div class="panel text-center py-5">
+    <p class="mb-1 fw-semibold">No results to show yet</p>
+    <p class="text-secondary mb-0">Results appear here once a club admin has recorded or approved them.</p>
+  </div>
+{% endif %}
+{% endblock %}

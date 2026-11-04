@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field, select with context %}
+{% block title %}Create club{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <h1 class="h3 mb-3">Create club</h1>
+    <form method="post" class="panel">
+      {{ csrf() }}
+      {{ field('name', 'Club name', required=true) }}
+      {{ select('sport', 'Sport', sport_choices, required=true, blank='Choose a sport...') }}
+      <p class="form-text">The sport decides which result fields the club uses, and cannot be changed later.</p>
+      <button class="btn btn-primary" type="submit">Create club</button>
+      <a class="btn btn-link" href="{{ url_for('superadmin.clubs') }}">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

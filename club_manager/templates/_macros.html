@@ -1,0 +1,83 @@
+{# Small reusable pieces. Import them in a template with:
+   {% from "_macros.html" import csrf, field with context %} #}
+
+{# Every form that posts data must contain this hidden token (protection against CSRF attacks). #}
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro status_badge(status) %}
+  {% set colours = {'active': 'success', 'approved': 'success', 'expired': 'warning',
+                    'pending': 'warning', 'deactivated': 'secondary'} %}
+  <span class="badge text-bg-{{ colours.get(status, 'secondary') }}">{{ status|capitalize }}</span>
+{% endmacro %}
+
+{# A text-like input. 'values' and 'errors' are dictionaries passed in by the route. #}
+{% macro field(name, label, type='text', required=false, help='', attrs='') %}
+  <div class="mb-3">
+    <label for="f-{{ name }}" class="form-label">{{ label }}{% if required %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>
+    <input type="{{ type }}" id="f-{{ name }}" name="{{ name }}"
+           class="form-control{% if errors.get(name) %} is-invalid{% endif %}"
+           value="{{ values.get(name) if values.get(name) is not none else '' }}"
+           {% if required %}required{% endif %} {{ attrs|safe }}>
+    {% if errors.get(name) %}<div class="invalid-feedback">{{ errors[name] }}</div>{% endif %}
+    {% if help %}<div class="form-text">{{ help }}</div>{% endif %}
+  </div>
+{% endmacro %}
+
+{% macro textarea(name, label, rows=3) %}
+  <div class="mb-3">
+    <label for="f-{{ name }}" class="form-label">{{ label }}</label>
+    <textarea id="f-{{ name }}" name="{{ name }}" rows="{{ rows }}"
+              class="form-control{% if errors.get(name) %} is-invalid{% endif %}">{{ values.get(name) or '' }}</textarea>
+    {% if errors.get(name) %}<div class="invalid-feedback">{{ errors[name] }}</div>{% endif %}
+  </div>
+{% endmacro %}
+
+{# options is a list of (value, label) pairs #}
+{% macro select(name, label, options, required=false, blank='') %}
+  <div class="mb-3">
+    <label for="f-{{ name }}" class="form-label">{{ label }}{% if required %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>
+    <select id="f-{{ name }}" name="{{ name }}" class="form-select{% if errors.get(name) %} is-invalid{% endif %}" {% if required %}required{% endif %}>
+      {% if blank %}<option value="">{{ blank }}</option>{% endif %}
+      {% for value, text in options %}
+        <option value="{{ value }}" {% if (values.get(name) or '')|string == value|string %}selected{% endif %}>{{ text }}</option>
+      {% endfor %}
+    </select>
+    {% if errors.get(name) %}<div class="invalid-feedback">{{ errors[name] }}</div>{% endif %}
+  </div>
+{% endmacro %}
+
+{# The result fields of a sport (score and target for shooting, finish time for running, ...).
+   They come from sports.py, so a new sport needs no template changes. #}
+{% macro result_fields(sport) %}
+  {% for f in sport.fields %}
+    <div class="mb-3">
+      <label for="f-{{ f.name }}" class="form-label">{{ f.label }} <span class="text-danger" aria-hidden="true">*</span></label>
+      {% if f.type == 'choice' %}
+        <select id="f-{{ f.name }}" name="{{ f.name }}" class="form-select{% if errors.get(f.name) %} is-invalid{% endif %}" required>
+          <option value="">Choose...</option>
+          {% for value, text in f.choices %}
+            <option value="{{ value }}" {% if values.get(f.name) == value %}selected{% endif %}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      {% elif f.type == 'number' %}
+        <input type="number" step="any" min="0" id="f-{{ f.name }}" name="{{ f.name }}" required
+               class="form-control{% if errors.get(f.name) %} is-invalid{% endif %}" value="{{ values.get(f.name, '') }}">
+      {% else %}
+        <input type="text" id="f-{{ f.name }}" name="{{ f.name }}" required
+               {% if f.type == 'time' %}placeholder="1:05:30" inputmode="numeric"{% endif %}
+               class="form-control{% if errors.get(f.name) %} is-invalid{% endif %}" value="{{ values.get(f.name, '') }}">
+      {% endif %}
+      {% if errors.get(f.name) %}<div class="invalid-feedback">{{ errors[f.name] }}</div>{% endif %}
+      {% if f.help %}<div class="form-text">{{ f.help }}</div>{% endif %}
+    </div>
+  {% endfor %}
+{% endmacro %}
+
+{% macro avatar(member, size=96) %}
+  {% if member.photo_file %}
+    <img class="avatar" style="width:{{ size }}px;height:{{ size }}px" alt="Photo of {{ member.full_name }}"
+         src="{{ url_for('files.member_file', user_id=member.id, kind='photo') }}">
+  {% else %}
+    <span class="avatar avatar-initial" style="width:{{ size }}px;height:{{ size }}px" aria-hidden="true">{{ member.full_name[:1] }}</span>
+  {% endif %}
+{% endmacro %}

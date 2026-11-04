@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge with context %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1 class="h3">Events</h1>
+  {% if current_user.role == 'admin' %}<a class="btn btn-primary" href="{{ url_for('events.new') }}">Create event</a>{% endif %}
+</div>
+
+<div class="panel">
+  <h2>Upcoming</h2>
+  {% if upcoming %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Date</th><th>Event</th><th>Type</th><th>Registered</th><th></th></tr></thead>
+      <tbody>
+      {% for e in upcoming %}
+        <tr>
+          <td class="text-nowrap">{{ e.event_date|nice_date }}</td>
+          <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.name }}</a>
+              <div class="small text-secondary">{{ e.discipline or '' }}{% if e.discipline and e.location %}, {% endif %}{{ e.location or '' }}</div></td>
+          <td>{{ e.event_type|capitalize }}</td>
+          <td>{{ e.reg_count }}{% if e.max_participants %} of {{ e.max_participants }}{% endif %}
+              {% if e.registered and current_user.role == 'member' %}<span class="badge text-bg-success ms-1">You're in</span>{% endif %}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('events.detail', event_id=e.id) }}">{{ 'Open' if current_user.role == 'admin' or e.registered else 'View and sign up' }}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="mb-0 text-secondary">No upcoming events.</p>{% endif %}
+</div>
+
+<div class="panel">
+  <h2>Past events</h2>
+  {% if past %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead><tr><th>Date</th><th>Event</th><th>Type</th><th>Took part</th><th></th></tr></thead>
+      <tbody>
+      {% for e in past %}
+        <tr>
+          <td class="text-nowrap">{{ e.event_date|nice_date }}</td>
+          <td><a class="fw-semibold text-decoration-none" href="{{ url_for('events.detail', event_id=e.id) }}">{{ e.name }}</a></td>
+          <td>{{ e.event_type|capitalize }}</td>
+          <td>{{ e.reg_count }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ url_for('results.event_results', event_id=e.id) }}">Results</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="mb-0 text-secondary">No past events yet.</p>{% endif %}
+</div>
+{% endblock %}
